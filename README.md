@@ -11,7 +11,7 @@ Video Walkthrough of install/first use
 Handbrake Automated Batch Renderer requires [Handbrake](https://handbrake.fr/downloads2.php) to run.
 
  - Download the command line version of Handbrake.exe  (latest version [here](https://handbrake.fr/downloads2.php))
- - Download Handbrake Automated Batch Renderer exe [here](https://github.com/CrazyOldWizard/Handbrake-Automated-Batch-Rendering/releases))
+ - Download Handbrake Automated Batch Renderer exe [here](https://github.com/CrazyOldWizard/Handbrake-Automated-Batch-Rendering/releases)
  - Place both the handbrake exe and the Handbrake automated batch renderer exe in the same folder.
  - Start the automated batch renderer exe and read the prompts.
  - After first start, the program will make some folders.
