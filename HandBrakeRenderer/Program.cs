@@ -192,7 +192,7 @@ namespace HandBrakeRenderer
                                     var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
                                     Console.WriteLine(handbrakeCommand);
 
-                                    //start handbrake with the args - more info here https://www.dotnetperls.com/process
+                                    //start handbrake with the args
                                     // writes sring to log file with current movie and the preset in use
                                     string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
                                     File.AppendAllText(logFile, currentFileLog + Environment.NewLine);
