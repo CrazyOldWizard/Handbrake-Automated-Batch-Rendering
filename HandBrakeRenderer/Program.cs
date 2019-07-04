@@ -23,7 +23,7 @@ namespace HandBrakeRenderer
         public static string htmlFolder = @"W:\files";
         public static string statusLog = (htmlFolder + "\\" + "RenderStatus.txt");
 
-        public bool statusLogEnabled = true;
+        public bool statusLogEnabled = false;
 
 
         public static void MissingItems()
