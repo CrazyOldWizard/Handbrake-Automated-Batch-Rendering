@@ -227,41 +227,43 @@ namespace HandBrakeRenderer
                                         var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
                                         Console.WriteLine(handbrakeCommand);
 
-                                    //start handbrake with the args - more info here https://www.dotnetperls.com/process
-                                    // writes sring to log file with current movie and the preset in use
-                                    string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
-                                    File.AppendAllText(logFile, currentFileLog + Environment.NewLine);
-                                    // updates render status
-                                    RenderStatus();
-                                    File.AppendAllText(statusLog, currentFileLog + Environment.NewLine);
-                                    // starts handbrake with handbrakecommand argument
-                                    ProcessStartInfo StartHandbrake = new ProcessStartInfo();
-                                    StartHandbrake.CreateNoWindow = false;
-                                    StartHandbrake.UseShellExecute = false;
-                                    StartHandbrake.FileName = HandBrakeEXE;
-                                    StartHandbrake.Arguments = handbrakeCommand;
-                                    try
-                                    {
-                                        // Start the process with the info we specified.
-                                        // Call WaitForExit and then the using-statement will close.
-                                        using (Process exeProcess = Process.Start(StartHandbrake))
+                                        //start handbrake with the args - more info here https://www.dotnetperls.com/process
+                                        // writes sring to log file with current movie and the preset in use
+                                        string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
+                                        File.AppendAllText(logFile, currentFileLog + Environment.NewLine);
+                                        // updates render status
+                                        Program p = new Program();
+                                        p.RenderStatus(currentFileLog, false);
+                                        // starts handbrake with handbrakecommand argument
+                                        ProcessStartInfo StartHandbrake = new ProcessStartInfo();
+                                        StartHandbrake.CreateNoWindow = false;
+                                        StartHandbrake.UseShellExecute = false;
+                                        StartHandbrake.FileName = HandBrakeEXE;
+                                        StartHandbrake.Arguments = handbrakeCommand;
+                                        try
                                         {
-                                            exeProcess.WaitForExit();
+                                            // Start the process with the info we specified.
+                                            // Call WaitForExit and then the using-statement will close.
+                                            using (Process exeProcess = Process.Start(StartHandbrake))
+                                            {
+                                                exeProcess.WaitForExit();
+                                            }
                                         }
+                                        catch (Exception e)
+                                        {
+                                            MessageBox.Show(e.ToString());
+                                        }
+                                        // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
+                                        File.Copy(movie, (OriginalFilesFolder + "\\" + movieName), true);
+                                        File.Delete(movie);
+                                        File.Delete(nodeJobFile);
+                                        // updates log file
+                                        string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + OriginalFilesFolder + "\\" + movieName);
+                                        File.AppendAllText(logFile, completeStatusLog + Environment.NewLine);
+                                        Console.WriteLine("RENDER FINISHED!!!");
+                                        // updates render status
+                                        p.RenderStatus(currentFileLog, true);
                                     }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show(e.ToString());
-                                    }
-                                    // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
-                                    File.Copy(movie, (OriginalFilesFolder + "\\" + movieName), true);
-                                    File.Delete(movie);
-                                    // updates log file
-                                    string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + OriginalFilesFolder + "\\" + movieName);
-                                    File.AppendAllText(logFile, completeStatusLog + Environment.NewLine);
-                                    Console.WriteLine("RENDER FINISHED!!!");
-                                    // updates render status
-                                    RenderStatus();
                                 }
                                 else
                                 {
