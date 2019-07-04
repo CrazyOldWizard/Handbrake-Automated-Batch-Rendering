@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
+
 
 namespace HandBrakeRenderer
 {
@@ -16,14 +14,17 @@ namespace HandBrakeRenderer
         public static string RenderEXE = System.Reflection.Assembly.GetEntryAssembly().Location;
         public static string RootFolder = Path.GetDirectoryName(RenderEXE);
         public static string utilsFolder = (RootFolder + "\\" + "utils");
-        public static string InboxFolder = RootFolder + "\\" + "Inbox";
-        public static string OutboxFolder = RootFolder + "\\" + "Encoded";
+        public static string InboxFolder = (RootFolder + "\\" + "Inbox");
+        public static string OutboxFolder = (RootFolder + "\\" + "Encoded");
         public static string HandBrakeEXE = (RootFolder + "\\" + "HandBrakeCLI.exe");
         public static object quote = "\"";
         public static string OriginalFilesFolder = (RootFolder + "\\" + "OriginalFiles");
         public static string logFile = (RootFolder + "\\" + "EncodeLog.txt");
-        // Can change render status path to point to a web server.  You can then see the status of the renders "on the go"
-        public static string statusLog = (RootFolder + "\\" + "RenderStatus.txt");
+        public static string htmlFolder = @"W:\files";
+        public static string statusLog = (htmlFolder + "\\" + "RenderStatus.txt");
+
+        public bool statusLogEnabled = true;
+
 
         public static void MissingItems()
         {
@@ -80,7 +81,7 @@ namespace HandBrakeRenderer
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
                 System.Environment.Exit(1);
-                
+
             }
         }
 
@@ -130,34 +131,55 @@ namespace HandBrakeRenderer
             }
         }
 
-        public static void RenderStatus()
+        public void RenderStatus(string currentFileLog, bool clear)
         {
-            // This is for creating a simple txt file that can be hosted on a web server for a semi-live status page
-            // first line overwrites txt file with new blank doc and then a string of text
-            File.WriteAllText(statusLog, ("Last status update was " + DateTime.Now + " Current Jobs:"));
-            File.AppendAllText(statusLog, "" + Environment.NewLine);
-            foreach (string preset in Directory.GetFiles(utilsFolder, "*.json", SearchOption.TopDirectoryOnly))
+            if (statusLogEnabled == true)
             {
-                var presetNameNoEXT = Path.GetFileNameWithoutExtension(preset);
-                var PresetNameFolder = (InboxFolder + "\\" + presetNameNoEXT);
-
-                //Checks if folder is not done and then shows the total files inside as well as how many it still needs
-                if (Directory.Exists(PresetNameFolder))
+                try
                 {
-                    int numOfFiles = Directory.GetFiles(PresetNameFolder).Length;
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    // status text string
-                    var statusInfo = ("The folder " + presetNameNoEXT + " has " + numOfFiles + " files in the render queue.");
-                    Console.WriteLine(statusInfo);
-                    File.AppendAllText(statusLog, "" + Environment.NewLine);
-                    File.AppendAllText(statusLog, statusInfo + Environment.NewLine);
-                    Console.ResetColor();
-                    Console.Clear();
+                    if (File.Exists(statusLog))
+                    {
+                        // This is for creating a simple txt file that can be hosted on a web server for a semi-live status page
+                        // first line overwrites txt file with new blank doc and then a string of text
+                        File.WriteAllText(statusLog, ("Last status update was " + DateTime.Now + " Current Jobs:"));
+                        File.AppendAllText(statusLog, "" + Environment.NewLine);
+                        foreach (string preset in Directory.GetFiles(utilsFolder, "*.json", SearchOption.TopDirectoryOnly))
+                        {
+                            var presetNameNoEXT = Path.GetFileNameWithoutExtension(preset);
+                            var PresetNameFolder = (InboxFolder + "\\" + presetNameNoEXT);
+
+                            //Checks if folder is not done and then shows the total files inside as well as how many it still needs
+                            if (Directory.Exists(PresetNameFolder))
+                            {
+                                int numOfFiles = Directory.GetFiles(PresetNameFolder).Length;
+                                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                // status text string
+                                var statusInfo = ("The folder " + presetNameNoEXT + " has " + numOfFiles + " files in the render queue.");
+                                Console.WriteLine(statusInfo);
+                                File.AppendAllText(statusLog, "" + Environment.NewLine);
+                                File.AppendAllText(statusLog, statusInfo + Environment.NewLine);
+                                Console.ResetColor();
+                                Console.Clear();
+                            }
+                        }
+                        if (clear == false)
+                        {
+                            File.AppendAllText(statusLog, currentFileLog + Environment.NewLine);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.ToString());
                 }
             }
-
-
+            else
+            {
+                Console.WriteLine("Status log not enabled...");
+                Thread.Sleep(1000);
+            }
         }
+
 
         public static void RenderFiles()
         {
@@ -171,12 +193,13 @@ namespace HandBrakeRenderer
                     // if they match it will use that preset as the handbrake preset.json file
                     foreach (string presetFile in Directory.GetFiles(utilsFolder, "*.json", SearchOption.TopDirectoryOnly))
                     {
-                                               
+
                         string presetFolderNoPth = new DirectoryInfo(presetFolder).Name;
                         string presetFileName = Path.GetFileNameWithoutExtension(presetFile);
                         bool contains = presetFolderNoPth.Equals(presetFileName);
                         var movieName = Path.GetFileName(movie);
                         var movieNameNoExt = Path.GetFileNameWithoutExtension(movie);
+                        string nodeJobFile = (presetFolder + "\\" + movieNameNoExt + ".renderjob");
                         string outMovie = (OutboxFolder + "\\" + movieNameNoExt + ".mkv");
                         //if the preset file contains the name of the current preset folder
                         if (contains == true)
@@ -185,48 +208,62 @@ namespace HandBrakeRenderer
                             if (IsFileReady(movie) == true)
                             {
                                 // file extension filter
-                                if (Path.GetExtension(movie).Contains(".mkv") || Path.GetExtension(movie).Contains(".mp4"))
+                                if (Path.GetExtension(movie).Contains(".mkv") || Path.GetExtension(movie).Contains(".mp4") || Path.GetExtension(movie).Contains(".webm"))
                                 {
-                                    // creates handbrake command
-                                    Console.WriteLine("I can render " + Path.GetFileName(movie));
-                                    var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
-                                    Console.WriteLine(handbrakeCommand);
+                                    //node job
+                                    if (File.Exists(nodeJobFile))
+                                    {
+                                        Console.WriteLine(movieNameNoExt + " is being rendered by another node, skipping");
 
-                                    //start handbrake with the args - more info here https://www.dotnetperls.com/process
-                                    // writes sring to log file with current movie and the preset in use
-                                    string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
-                                    File.AppendAllText(logFile, currentFileLog + Environment.NewLine);
-                                    // updates render status
-                                    RenderStatus();
-                                    File.AppendAllText(statusLog, currentFileLog + Environment.NewLine);
-                                    // starts handbrake with handbrakecommand argument
-                                    ProcessStartInfo StartHandbrake = new ProcessStartInfo();
-                                    StartHandbrake.CreateNoWindow = false;
-                                    StartHandbrake.UseShellExecute = false;
-                                    StartHandbrake.FileName = HandBrakeEXE;
-                                    StartHandbrake.Arguments = handbrakeCommand;
-                                    try
+                                    }
+                                    else
                                     {
-                                        // Start the process with the info we specified.
-                                        // Call WaitForExit and then the using-statement will close.
-                                        using (Process exeProcess = Process.Start(StartHandbrake))
+                                        //creates .renderjob file for nodes
+                                        var jobFile = File.Create(nodeJobFile);
+                                        jobFile.Close();
+                                        File.WriteAllText(nodeJobFile, ("Node " + System.Environment.MachineName + " got this job at " + DateTime.Now));
+                                        // creates handbrake command
+                                        Console.WriteLine("I can render " + Path.GetFileName(movie));
+                                        var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
+                                        Console.WriteLine(handbrakeCommand);
+
+                                        //start handbrake with the args - more info here https://www.dotnetperls.com/process
+                                        // writes sring to log file with current movie and the preset in use
+                                        string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
+                                        File.AppendAllText(logFile, currentFileLog + Environment.NewLine);
+                                        // updates render status
+                                        Program p = new Program();
+                                        p.RenderStatus(currentFileLog, false);
+                                        // starts handbrake with handbrakecommand argument
+                                        ProcessStartInfo StartHandbrake = new ProcessStartInfo();
+                                        StartHandbrake.CreateNoWindow = false;
+                                        StartHandbrake.UseShellExecute = false;
+                                        StartHandbrake.FileName = HandBrakeEXE;
+                                        StartHandbrake.Arguments = handbrakeCommand;
+                                        try
                                         {
-                                            exeProcess.WaitForExit();
+                                            // Start the process with the info we specified.
+                                            // Call WaitForExit and then the using-statement will close.
+                                            using (Process exeProcess = Process.Start(StartHandbrake))
+                                            {
+                                                exeProcess.WaitForExit();
+                                            }
                                         }
+                                        catch (Exception e)
+                                        {
+                                            MessageBox.Show(e.ToString());
+                                        }
+                                        // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
+                                        File.Copy(movie, (OriginalFilesFolder + "\\" + movieName), true);
+                                        File.Delete(movie);
+                                        File.Delete(nodeJobFile);
+                                        // updates log file
+                                        string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + OriginalFilesFolder + "\\" + movieName);
+                                        File.AppendAllText(logFile, completeStatusLog + Environment.NewLine);
+                                        Console.WriteLine("RENDER FINISHED!!!");
+                                        // updates render status
+                                        p.RenderStatus(currentFileLog, true);
                                     }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show(e.ToString());
-                                    }
-                                    // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
-                                    File.Copy(movie, (OriginalFilesFolder + "\\" + movieName), true);
-                                    File.Delete(movie);
-                                    // updates log file
-                                    string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + OriginalFilesFolder + "\\" + movieName);
-                                    File.AppendAllText(logFile, completeStatusLog + Environment.NewLine);
-                                    Console.WriteLine("RENDER FINISHED!!!");
-                                    // updates render status
-                                    RenderStatus();
                                 }
                                 else
                                 {
@@ -235,11 +272,15 @@ namespace HandBrakeRenderer
                             }
                             else
                             {
-                                // if it can't open the file and it is a valid movie, then it will show this message until file is ready to open
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine(movieName + " Do I have Read/Write access to this file? " + IsFileReady(movie) + " Probably still copying...");
+                                bool renderingFile = Path.GetExtension(movie).Contains(".renderjob");
+                                if (renderingFile == false)
+                                {
+                                    // if it can't open the file and it is a valid movie, then it will show this message until file is ready to open
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine(movieName + " Do I have Read/Write access to this file? " + IsFileReady(movie) + " Probably still copying...");
+                                }
                             }
-                            
+
                         }
                     }
 
@@ -249,6 +290,7 @@ namespace HandBrakeRenderer
             }
 
         }
+
 
         static void Main()
         {
@@ -261,6 +303,7 @@ namespace HandBrakeRenderer
                 RenderFiles();
                 Thread.Sleep(1000);
                 Console.Clear();
+
             }
         }
     }
