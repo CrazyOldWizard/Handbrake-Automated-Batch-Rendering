@@ -24,8 +24,8 @@ namespace HandBrakeRenderer
         public static string statusLog = (htmlFolder + "\\" + "RenderStatus.txt");
 
         public bool statusLogEnabled = false;
-
-
+        public static string[] fileTypes = {".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts"};
+      
         public static void MissingItems()
         {
             // Creates the folders required.
@@ -180,7 +180,6 @@ namespace HandBrakeRenderer
             }
         }
 
-
         public static void RenderFiles()
         {
             // checks each preset folder
@@ -208,66 +207,70 @@ namespace HandBrakeRenderer
                             if (IsFileReady(movie) == true)
                             {
                                 // file extension filter
-                                if (Path.GetExtension(movie).Contains(".mkv") || Path.GetExtension(movie).Contains(".mp4") || Path.GetExtension(movie).Contains(".webm"))
+                                foreach (string ext in fileTypes)
                                 {
-                                    //node job
-                                    if (File.Exists(nodeJobFile))
+                                    if (Path.GetExtension(movie).Contains(ext))
                                     {
-                                        Console.WriteLine(movieNameNoExt + " is being rendered by another node, skipping");
+                                        //node job
+                                        if (File.Exists(nodeJobFile))
+                                        {
+                                            Console.WriteLine(movieNameNoExt + " is being rendered by another node, skipping");
 
+                                        }
+                                        else
+                                        {
+                                            //creates .renderjob file for nodes
+                                            var jobFile = File.Create(nodeJobFile);
+                                            jobFile.Close();
+                                            File.WriteAllText(nodeJobFile, ("Node " + System.Environment.MachineName + " got this job at " + DateTime.Now));
+                                            // creates handbrake command
+                                            Console.WriteLine("I can render " + Path.GetFileName(movie));
+                                            var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
+                                            Console.WriteLine(handbrakeCommand);
+
+                                            //start handbrake with the args - more info here https://www.dotnetperls.com/process
+                                            // writes sring to log file with current movie and the preset in use
+                                            string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
+                                            File.AppendAllText(logFile, currentFileLog + Environment.NewLine);
+                                            // updates render status
+                                            Program p = new Program();
+                                            p.RenderStatus(currentFileLog, false);
+                                            // starts handbrake with handbrakecommand argument
+                                            ProcessStartInfo StartHandbrake = new ProcessStartInfo();
+                                            StartHandbrake.CreateNoWindow = false;
+                                            StartHandbrake.UseShellExecute = false;
+                                            StartHandbrake.FileName = HandBrakeEXE;
+                                            StartHandbrake.Arguments = handbrakeCommand;
+                                            try
+                                            {
+                                                // Start the process with the info we specified.
+                                                // Call WaitForExit and then the using-statement will close.
+                                                using (Process exeProcess = Process.Start(StartHandbrake))
+                                                {
+                                                    exeProcess.WaitForExit();
+                                                }
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                MessageBox.Show(e.ToString());
+                                            }
+                                            // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
+                                            File.Copy(movie, (OriginalFilesFolder + "\\" + movieName), true);
+                                            File.Delete(movie);
+                                            File.Delete(nodeJobFile);
+                                            // updates log file
+                                            string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + OriginalFilesFolder + "\\" + movieName);
+                                            File.AppendAllText(logFile, completeStatusLog + Environment.NewLine);
+                                            Console.WriteLine("RENDER FINISHED!!!");
+                                            // updates render status
+                                            p.RenderStatus(currentFileLog, true);
+                                            break;
+                                        }
                                     }
                                     else
                                     {
-                                        //creates .renderjob file for nodes
-                                        var jobFile = File.Create(nodeJobFile);
-                                        jobFile.Close();
-                                        File.WriteAllText(nodeJobFile, ("Node " + System.Environment.MachineName + " got this job at " + DateTime.Now));
-                                        // creates handbrake command
-                                        Console.WriteLine("I can render " + Path.GetFileName(movie));
-                                        var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
-                                        Console.WriteLine(handbrakeCommand);
-
-                                        //start handbrake with the args - more info here https://www.dotnetperls.com/process
-                                        // writes sring to log file with current movie and the preset in use
-                                        string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
-                                        File.AppendAllText(logFile, currentFileLog + Environment.NewLine);
-                                        // updates render status
-                                        Program p = new Program();
-                                        p.RenderStatus(currentFileLog, false);
-                                        // starts handbrake with handbrakecommand argument
-                                        ProcessStartInfo StartHandbrake = new ProcessStartInfo();
-                                        StartHandbrake.CreateNoWindow = false;
-                                        StartHandbrake.UseShellExecute = false;
-                                        StartHandbrake.FileName = HandBrakeEXE;
-                                        StartHandbrake.Arguments = handbrakeCommand;
-                                        try
-                                        {
-                                            // Start the process with the info we specified.
-                                            // Call WaitForExit and then the using-statement will close.
-                                            using (Process exeProcess = Process.Start(StartHandbrake))
-                                            {
-                                                exeProcess.WaitForExit();
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            MessageBox.Show(e.ToString());
-                                        }
-                                        // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
-                                        File.Copy(movie, (OriginalFilesFolder + "\\" + movieName), true);
-                                        File.Delete(movie);
-                                        File.Delete(nodeJobFile);
-                                        // updates log file
-                                        string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + OriginalFilesFolder + "\\" + movieName);
-                                        File.AppendAllText(logFile, completeStatusLog + Environment.NewLine);
-                                        Console.WriteLine("RENDER FINISHED!!!");
-                                        // updates render status
-                                        p.RenderStatus(currentFileLog, true);
+                                        Console.WriteLine(Path.GetFileName(movie) + " Is not a file I can render");
                                     }
-                                }
-                                else
-                                {
-                                    Console.WriteLine(Path.GetFileName(movie) + " Is not a file I can render");
                                 }
                             }
                             else
