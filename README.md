@@ -1,5 +1,5 @@
 # Handbrake Automated Batch Renderer
-This is an tool that will monitor a set of folders and render .mkv and .mp4 files that are placed into them.
+This is an tool that will monitor a set of folders and render the video files that are placed into them.
 
 
 
