@@ -3,6 +3,7 @@ using System.Threading;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.Configuration;
 
 
 namespace HandBrakeRenderer
@@ -20,10 +21,12 @@ namespace HandBrakeRenderer
         public static object quote = "\"";
         public static string OriginalFilesFolder = (RootFolder + "\\" + "OriginalFiles");
         public static string logFile = (RootFolder + "\\" + "EncodeLog.txt");
-        public static string htmlFolder = @"W:\files";
+        public static string htmlFolder = ConfigurationManager.AppSettings["HTMLStatusDir"];
         public static string statusLog = (htmlFolder + "\\" + "RenderStatus.txt");
 
-        public bool statusLogEnabled = false;
+        public bool statusLogEnabled = Boolean.Parse(ConfigurationManager.AppSettings["statusLogEnabled"]);
+        int numOfFiles;
+
         public static string[] fileTypes = {".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts"};
       
         public static void MissingItems()
@@ -135,43 +138,54 @@ namespace HandBrakeRenderer
         {
             if (statusLogEnabled == true)
             {
-                try
+               
+                // This is for creating a simple txt file that can be hosted on a web server for a semi-live status page
+                // first line overwrites txt file with new blank doc and then a string of text
+                File.WriteAllText(statusLog, ("Last status update was " + DateTime.Now + " Current Jobs:"));
+                File.AppendAllText(statusLog, "" + Environment.NewLine);
+                foreach (string preset in Directory.GetFiles(utilsFolder, "*.json", SearchOption.TopDirectoryOnly))
                 {
-                    if (File.Exists(statusLog))
-                    {
-                        // This is for creating a simple txt file that can be hosted on a web server for a semi-live status page
-                        // first line overwrites txt file with new blank doc and then a string of text
-                        File.WriteAllText(statusLog, ("Last status update was " + DateTime.Now + " Current Jobs:"));
-                        File.AppendAllText(statusLog, "" + Environment.NewLine);
-                        foreach (string preset in Directory.GetFiles(utilsFolder, "*.json", SearchOption.TopDirectoryOnly))
-                        {
-                            var presetNameNoEXT = Path.GetFileNameWithoutExtension(preset);
-                            var PresetNameFolder = (InboxFolder + "\\" + presetNameNoEXT);
+                    var presetNameNoEXT = Path.GetFileNameWithoutExtension(preset);
+                    var PresetNameFolder = (InboxFolder + "\\" + presetNameNoEXT);
 
-                            //Checks if folder is not done and then shows the total files inside as well as how many it still needs
-                            if (Directory.Exists(PresetNameFolder))
+                    //Checks if folder is not done and then shows the total files inside as well as how many it still needs
+                    if (Directory.Exists(PresetNameFolder))
+                    {
+                        var filesInFolder = Directory.GetFiles(PresetNameFolder);
+                        int countFiles = filesInFolder.Length;
+
+                        foreach (string FT in fileTypes)
+                        {
+                            foreach (string file in filesInFolder)
                             {
-                                int numOfFiles = Directory.GetFiles(PresetNameFolder).Length;
-                                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                                // status text string
-                                var statusInfo = ("The folder " + presetNameNoEXT + " has " + numOfFiles + " files in the render queue.");
-                                Console.WriteLine(statusInfo);
-                                File.AppendAllText(statusLog, "" + Environment.NewLine);
-                                File.AppendAllText(statusLog, statusInfo + Environment.NewLine);
-                                Console.ResetColor();
-                                Console.Clear();
+                                if (file.EndsWith(FT) == true)
+                                {
+                                    numOfFiles++;
+                                }
                             }
                         }
-                        if (clear == false)
+
+                        if(countFiles == 0)
                         {
-                            File.AppendAllText(statusLog, currentFileLog + Environment.NewLine);
+                            numOfFiles = 0;
                         }
+
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        // status text string
+                        var statusInfo = ("The folder " + presetNameNoEXT + " has " + numOfFiles + " files in the render queue.");
+                        Console.WriteLine(statusInfo);
+                        File.AppendAllText(statusLog, "" + Environment.NewLine);
+                        File.AppendAllText(statusLog, statusInfo + Environment.NewLine);
+                        Console.ResetColor();
+                        Console.Clear();
                     }
                 }
-                catch (Exception e)
+                if (clear == false)
                 {
-                    MessageBox.Show(e.ToString());
+                    File.AppendAllText(statusLog, currentFileLog + Environment.NewLine);
                 }
+
+                
             }
             else
             {
