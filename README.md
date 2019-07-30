@@ -18,3 +18,6 @@ Handbrake Automated Batch Renderer requires [Handbrake](https://handbrake.fr/dow
  - In the folder named "utils", you will place your handbrake preset.json files.
  - The next time the program is started, it will make a seperate folder for each preset.json file.
  - You can palce your videos into one of the new folders and it will start to render the videos.
+
+
+- Latest DEV build can be found [here](https://github.com/CrazyOldWizard/Handbrake-Automated-Batch-Rendering/tree/master/HandBrakeRenderer/bin/Debug)
