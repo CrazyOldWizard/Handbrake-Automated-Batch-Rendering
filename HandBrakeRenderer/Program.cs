@@ -290,24 +290,25 @@ namespace HandBrakeRenderer
                             else
                             {
                                 bool renderingFile = Path.GetExtension(movie).Contains(".renderjob");
+                                if (File.Exists(nodeJobFile))
+                                {
+                                    Console.WriteLine(movieNameNoExt + " is being rendered by another node, skipping");
+                                    continue;
+                                }
+
                                 if (renderingFile == false)
                                 {
                                     // if it can't open the file and it is a valid movie, then it will show this message until file is ready to open
                                     Console.ForegroundColor = ConsoleColor.Red;
                                     Console.WriteLine(movieName + " Do I have Read/Write access to this file? " + IsFileReady(movie) + " Probably still copying...");
                                     Console.ForegroundColor = ConsoleColor.White;
-                                    return;
+                                    continue;
                                 }
                             }
-
                         }
                     }
-
                 }
-
-
             }
-
         }
 
 
