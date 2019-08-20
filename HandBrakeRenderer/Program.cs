@@ -84,7 +84,11 @@ namespace HandBrakeRenderer
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
                 System.Environment.Exit(1);
-
+            }
+            if(!File.Exists(statusLog))
+            {
+                statusLog = (RootFolder + "\\" + "RenderStatus.txt");
+                Console.WriteLine("Can't access specified file path for the Status Log! - Using " + statusLog);
             }
         }
 
