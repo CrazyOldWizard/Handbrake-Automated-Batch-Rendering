@@ -2,9 +2,8 @@
 using System.Threading;
 using System.IO;
 using System.Diagnostics;
-using System.Windows.Forms;
 using System.Configuration;
-
+using System.Runtime.InteropServices;
 
 namespace HandBrakeRenderer
 {
@@ -80,7 +79,9 @@ namespace HandBrakeRenderer
                 Console.WriteLine(HandBrakeEXE + " Does not exist!!! - HandbrakeCLI.exe needs to live at " + HandBrakeEXE);
                 Console.WriteLine("Opening download page");
                 Thread.Sleep(5000);
-                Process.Start("https://handbrake.fr/downloads2.php");
+                string url = @"https://handbrake.fr/downloads2.php";
+                //Process.Start("https://handbrake.fr/downloads2.php");
+                OpenBrowser(url);
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
                 System.Environment.Exit(1);
@@ -89,6 +90,27 @@ namespace HandBrakeRenderer
             {
                 statusLog = (RootFolder + "\\" + "RenderStatus.txt");
                 Console.WriteLine("Can't access specified file path for the Status Log! - Using " + statusLog);
+            }
+        }
+
+
+        private static void OpenBrowser(string url)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); // Works ok on windows
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Process.Start("xdg-open", url);  // Works ok on linux
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Process.Start("open", url); // Not tested
+            }
+            else
+            {
+                Console.WriteLine("Could not open URL to " + url);
             }
         }
 
@@ -270,7 +292,7 @@ namespace HandBrakeRenderer
                                             }
                                             catch (Exception e)
                                             {
-                                                MessageBox.Show(e.ToString());
+                                                Console.WriteLine(e.ToString());
                                             }
                                             // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
                                             File.Copy(movie, (OriginalFilesFolder + "\\" + movieName), true);
