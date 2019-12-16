@@ -4,6 +4,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Configuration;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace HandBrakeRenderer
 {
@@ -323,7 +324,7 @@ namespace HandBrakeRenderer
                                     // if it can't open the file and it is a valid movie, then it will show this message until file is ready to open
                                     Console.ForegroundColor = ConsoleColor.Red;
                                     Console.WriteLine(movieName + " Do I have Read/Write access to this file? " + IsFileReady(movie) + " Probably still copying...");
-                                    Console.ForegroundColor = ConsoleColor.White;
+                                    Console.ResetColor();
                                     continue;
                                 }
                             }
