@@ -334,9 +334,15 @@ namespace HandBrakeRenderer
             }
         }
 
+        static SettingsFile SettingsFile = new SettingsFile();
 
         static void Main()
         {
+
+            var test = JsonSerializer.Serialize<SettingsFile>(SettingsFile);
+
+            File.WriteAllText(@"C:\Users\Ben Haycraft\Desktop\Settings.json", test);
+
             MissingItems(); //this doesn't need to be run in the loop
             while (true)
             {
