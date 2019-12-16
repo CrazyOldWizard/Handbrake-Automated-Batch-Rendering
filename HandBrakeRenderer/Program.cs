@@ -15,8 +15,8 @@ namespace HandBrakeRenderer
         public static string utilsFolder = Path.Combine(RootFolder, "utils");
         public static string InboxFolder = Path.Combine(RootFolder, "Inbox");
         public static string OutboxFolder = Path.Combine(RootFolder, "Encoded");
-        public static string HandBrakeEXE = (RootFolder + "\\" + "HandBrakeCLI.exe"); // this will not work on other os's
-        public const string quote = "\"";
+        public static string HandBrakeCLI = Path.GetFullPath(Path.Combine(RootFolder, "HandBrakeCLI.exe")); // this will not work on other os's - hardcoded .exe
+        public static string quote = "\"";
         public static string OriginalFilesFolder = Path.Combine(RootFolder, "OriginalFiles");
         public static string logFile = Path.GetFullPath(Path.Combine(RootFolder, "EncodeLog.txt"));
         public static string htmlFolder = ConfigurationManager.AppSettings["HTMLStatusDir"];
@@ -59,7 +59,7 @@ namespace HandBrakeRenderer
 
             // first time startup for presets- checks to see if you have any presets in the utils folder.  
             // If you don't, then it will give you info on what you need to do
-            if (Directory.GetFiles(utilsFolder).Length < 1)
+            if (Directory.GetFiles(utilsFolder, "*.json",  SearchOption.TopDirectoryOnly).Length < 1)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("");
@@ -69,11 +69,11 @@ namespace HandBrakeRenderer
                 Console.WriteLine("For example, MyPreset.json should be named MyPreset when visible in the Handbrake UI");
             }
             // Checks to see if HandbrakeCLI.exe exists in root folder.
-            if (!File.Exists(HandBrakeEXE))
+            if (!File.Exists(HandBrakeCLI))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("");
-                Console.WriteLine(HandBrakeEXE + " Does not exist!!! - HandbrakeCLI.exe needs to live at " + HandBrakeEXE);
+                Console.WriteLine(HandBrakeCLI + " Does not exist!!! - HandbrakeCLI.exe needs to live at " + HandBrakeCLI);
                 Console.WriteLine("Opening download page");
                 Thread.Sleep(5000);
                 string url = @"https://handbrake.fr/downloads2.php";
@@ -123,7 +123,6 @@ namespace HandBrakeRenderer
                 if (Directory.Exists(PresetNameFolder))
                 {
                     int numOfFiles = Directory.GetFiles(PresetNameFolder).Length;
-                    //int numFilesNeeded = (NumberOfRenders - numOfFiles);
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine("The folder " + presetNameNoEXT + " has " + numOfFiles + " files in the render queue.");
                     Console.ResetColor();
@@ -228,14 +227,13 @@ namespace HandBrakeRenderer
                     // if they match it will use that preset as the handbrake preset.json file
                     foreach (string presetFile in Directory.GetFiles(utilsFolder, "*.json", SearchOption.TopDirectoryOnly))
                     {
-
                         string presetFolderNoPth = new DirectoryInfo(presetFolder).Name;
                         string presetFileName = Path.GetFileNameWithoutExtension(presetFile);
                         bool contains = presetFolderNoPth.Equals(presetFileName);
                         var movieName = Path.GetFileName(movie);
                         var movieNameNoExt = Path.GetFileNameWithoutExtension(movie);
                         string nodeJobFile = Path.GetFullPath(Path.Combine(presetFolder, (movieNameNoExt + ".renderjob")));
-                        string outMovie = Path.GetExtension(Path.Combine(OutboxFolder, (movieNameNoExt + ".mkv")));
+                        string outMovie = Path.GetFullPath(Path.Combine(OutboxFolder, (movieNameNoExt + ".mkv")));
                         //if the preset file contains the name of the current preset folder
                         if (contains == true)
                         {
@@ -275,7 +273,7 @@ namespace HandBrakeRenderer
                                         ProcessStartInfo StartHandbrake = new ProcessStartInfo();
                                         StartHandbrake.CreateNoWindow = false;
                                         StartHandbrake.UseShellExecute = false;
-                                        StartHandbrake.FileName = HandBrakeEXE;
+                                        StartHandbrake.FileName = HandBrakeCLI;
                                         StartHandbrake.Arguments = handbrakeCommand;
                                         try
                                         {
@@ -300,7 +298,7 @@ namespace HandBrakeRenderer
                                         Console.WriteLine("RENDER FINISHED!!!");
                                         // updates render status
                                         p.RenderStatus(currentFileLog, true);
-                                        break;
+                                        return;
                                     }
                                 }
                                 else
@@ -336,16 +334,15 @@ namespace HandBrakeRenderer
 
         static void Main()
         {
+            MissingItems(); //this doesn't need to be run in the loop
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine(DateTime.Now);
-                MissingItems();
                 CreatePresetDirs();
                 RenderFiles();
                 Thread.Sleep(1000);
                 Console.Clear();
-
             }
         }
     }
