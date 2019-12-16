@@ -12,17 +12,17 @@ namespace HandBrakeRenderer
         //File Paths
         public static string RenderEXE = System.Reflection.Assembly.GetEntryAssembly().Location;
         public static string RootFolder = Path.GetDirectoryName(RenderEXE);
-        public static string utilsFolder = (RootFolder + "\\" + "utils");
-        public static string InboxFolder = (RootFolder + "\\" + "Inbox");
-        public static string OutboxFolder = (RootFolder + "\\" + "Encoded");
-        public static string HandBrakeEXE = (RootFolder + "\\" + "HandBrakeCLI.exe");
-        public static object quote = "\"";
-        public static string OriginalFilesFolder = (RootFolder + "\\" + "OriginalFiles");
-        public static string logFile = (RootFolder + "\\" + "EncodeLog.txt");
+        public static string utilsFolder = Path.Combine(RootFolder, "utils");
+        public static string InboxFolder = Path.Combine(RootFolder, "Inbox");
+        public static string OutboxFolder = Path.Combine(RootFolder, "Encoded");
+        public static string HandBrakeEXE = (RootFolder + "\\" + "HandBrakeCLI.exe"); // this will not work on other os's
+        public const string quote = "\"";
+        public static string OriginalFilesFolder = Path.Combine(RootFolder, "OriginalFiles");
+        public static string logFile = Path.GetFullPath(Path.Combine(RootFolder, "EncodeLog.txt"));
         public static string htmlFolder = ConfigurationManager.AppSettings["HTMLStatusDir"];
-        public static string statusLog = (htmlFolder + "\\" + "RenderStatus.txt");
+        public static string statusLog = Path.GetFullPath(Path.Combine(htmlFolder, "RenderStatus.txt"));
 
-        public bool statusLogEnabled = Boolean.Parse(ConfigurationManager.AppSettings["statusLogEnabled"]);
+        public bool statusLogEnabled = bool.Parse(ConfigurationManager.AppSettings["statusLogEnabled"]);
         int numOfFiles;
 
         public static readonly string[] fileTypes = {".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts"};
@@ -77,15 +77,14 @@ namespace HandBrakeRenderer
                 Console.WriteLine("Opening download page");
                 Thread.Sleep(5000);
                 string url = @"https://handbrake.fr/downloads2.php";
-                //Process.Start("https://handbrake.fr/downloads2.php");
                 OpenBrowser(url);
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
-                System.Environment.Exit(1);
+                Environment.Exit(1);
             }
             if(!File.Exists(statusLog))
             {
-                statusLog = (RootFolder + "\\" + "RenderStatus.txt");
+                statusLog = Path.GetFullPath(Path.Combine(RootFolder, "RenderStatus.txt"));
                 Console.WriteLine("Can't access specified file path for the Status Log! - Using " + statusLog);
             }
         }
@@ -118,7 +117,7 @@ namespace HandBrakeRenderer
             foreach (string preset in Directory.GetFiles(utilsFolder, "*.json", SearchOption.TopDirectoryOnly))
             {
                 var presetNameNoEXT = Path.GetFileNameWithoutExtension(preset);
-                var PresetNameFolder = (InboxFolder + "\\" + presetNameNoEXT);
+                var PresetNameFolder = Path.Combine(InboxFolder, presetNameNoEXT);
 
                 //Checks if folder has jobs waiting in queue, if it does, it shows the count - this is similar to "Render Status()"
                 if (Directory.Exists(PresetNameFolder))
@@ -133,7 +132,7 @@ namespace HandBrakeRenderer
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Directory.CreateDirectory(InboxFolder + "\\" + presetNameNoEXT);
+                    Directory.CreateDirectory(PresetNameFolder);
                     Console.WriteLine("Creating folder " + presetNameNoEXT + " in " + RootFolder);
                     Console.ResetColor();
 
@@ -235,8 +234,8 @@ namespace HandBrakeRenderer
                         bool contains = presetFolderNoPth.Equals(presetFileName);
                         var movieName = Path.GetFileName(movie);
                         var movieNameNoExt = Path.GetFileNameWithoutExtension(movie);
-                        string nodeJobFile = (presetFolder + "\\" + movieNameNoExt + ".renderjob");
-                        string outMovie = (OutboxFolder + "\\" + movieNameNoExt + ".mkv");
+                        string nodeJobFile = Path.GetFullPath(Path.Combine(presetFolder, (movieNameNoExt + ".renderjob")));
+                        string outMovie = Path.GetExtension(Path.Combine(OutboxFolder, (movieNameNoExt + ".mkv")));
                         //if the preset file contains the name of the current preset folder
                         if (contains == true)
                         {
@@ -259,7 +258,7 @@ namespace HandBrakeRenderer
                                         //creates .renderjob file for nodes
                                         var jobFile = File.Create(nodeJobFile);
                                         jobFile.Close();
-                                        File.WriteAllText(nodeJobFile, ("Node " + System.Environment.MachineName + " got this job at " + DateTime.Now));
+                                        File.WriteAllText(nodeJobFile, ("Node " + Environment.MachineName + " got this job at " + DateTime.Now));
                                         // creates handbrake command
                                         Console.WriteLine("I can render " + Path.GetFileName(movie));
                                         var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
@@ -292,11 +291,11 @@ namespace HandBrakeRenderer
                                             Console.WriteLine(e.ToString());
                                         }
                                         // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
-                                        File.Copy(movie, (OriginalFilesFolder + "\\" + movieName), true);
+                                        File.Copy(movie, Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)), true);
                                         File.Delete(movie);
                                         File.Delete(nodeJobFile);
                                         // updates log file
-                                        string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + OriginalFilesFolder + "\\" + movieName);
+                                        string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)));
                                         File.AppendAllText(logFile, completeStatusLog + Environment.NewLine);
                                         Console.WriteLine("RENDER FINISHED!!!");
                                         // updates render status
