@@ -262,6 +262,8 @@ namespace HandBrakeRenderer
                                         var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
                                         Console.WriteLine(handbrakeCommand);
 
+                                        Console.Title = "Handbrake-Automated-Rendering:  " + movieName + " -- " + DateTime.Now;
+
                                         //start handbrake with the args
                                         // writes sring to log file with current movie and the preset in use
                                         string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
@@ -337,6 +339,7 @@ namespace HandBrakeRenderer
             MissingItems(); //this doesn't need to be run in the loop
             while (true)
             {
+                Console.Title = "Handbrake-Automated-Rendering: Looking for work";
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine(DateTime.Now);
                 CreatePresetDirs();
