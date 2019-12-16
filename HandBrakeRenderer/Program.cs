@@ -9,7 +9,6 @@ namespace HandBrakeRenderer
 {
     class Program
     {
-
         //File Paths
         public static string RenderEXE = System.Reflection.Assembly.GetEntryAssembly().Location;
         public static string RootFolder = Path.GetDirectoryName(RenderEXE);
@@ -26,40 +25,38 @@ namespace HandBrakeRenderer
         public bool statusLogEnabled = Boolean.Parse(ConfigurationManager.AppSettings["statusLogEnabled"]);
         int numOfFiles;
 
-        public static string[] fileTypes = {".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts"};
-      
+        public static readonly string[] fileTypes = {".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts"};
+
+        private static readonly string[] programFolders = { OriginalFilesFolder, OutboxFolder, utilsFolder, InboxFolder };
+
+        private static void createMissingFolder(string folder)
+        {
+            if (!Directory.Exists(folder))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(folder + " does not exist, creating...");
+                try
+                {
+                    Directory.CreateDirectory(folder);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+        }
+
+
         public static void MissingItems()
         {
             // Creates the folders required.
 
-            // Original files - the original files are moved to this folder after rendering is finished.
-            if (!Directory.Exists(OriginalFilesFolder))
+            foreach (string folder in programFolders)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(OriginalFilesFolder + " does not exist, creating...");
-                Directory.CreateDirectory(OriginalFilesFolder);
+                createMissingFolder(folder);
             }
-            // Outbox folder - this folder is where the finished files are placed.
-            if (!Directory.Exists(OutboxFolder))
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(OutboxFolder + " does not exist, creating...");
-                Directory.CreateDirectory(OutboxFolder);
-            }
-            // Utils folder - this folder is where the presets are stored.
-            if (!Directory.Exists(utilsFolder))
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(utilsFolder + " does not exist, creating...");
-                Directory.CreateDirectory(utilsFolder);
-            }
-            // Inbox folder - the root folder for the presets folders to live in.
-            if (!Directory.Exists(InboxFolder))
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(InboxFolder + " does not exist, creating...");
-                Directory.CreateDirectory(InboxFolder);
-            }
+
+
             // first time startup for presets- checks to see if you have any presets in the utils folder.  
             // If you don't, then it will give you info on what you need to do
             if (Directory.GetFiles(utilsFolder).Length < 1)
