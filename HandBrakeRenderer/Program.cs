@@ -334,12 +334,18 @@ namespace HandBrakeRenderer
             }
         }
 
-        static SettingsFile SettingsFile = new SettingsFile();
+        static SettingsFile TheSettingsFile = new SettingsFile();
+
+        
 
         static void Main()
         {
+            
+            var jsonSettings = new JsonSerializerOptions();
+            jsonSettings.WriteIndented = true;
 
-            var test = JsonSerializer.Serialize<SettingsFile>(SettingsFile);
+            var test = JsonSerializer.Serialize(TheSettingsFile, jsonSettings);
+           
 
             File.WriteAllText(@"C:\Users\Ben Haycraft\Desktop\Settings.json", test);
 
