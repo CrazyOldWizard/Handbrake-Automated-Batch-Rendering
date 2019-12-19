@@ -10,6 +10,9 @@ namespace HandBrakeRenderer
 {
     class Program
     {
+        static SettingsFile TheSettingsFile = new SettingsFile();
+
+
         //File Paths
         public static string RenderEXE = System.Reflection.Assembly.GetEntryAssembly().Location;
         public static string RootFolder = Path.GetDirectoryName(RenderEXE);
@@ -334,21 +337,19 @@ namespace HandBrakeRenderer
             }
         }
 
-        static SettingsFile TheSettingsFile = new SettingsFile();
+        private static void WriteTestJSON()
+        {
+            var jsonSettings = new JsonSerializerOptions();
+            jsonSettings.WriteIndented = true;
+            var serializedJSON = JsonSerializer.Serialize(TheSettingsFile, jsonSettings);
+            File.WriteAllText(@"C:\Settings.json", serializedJSON);
+        }
 
-        
+
 
         static void Main()
         {
             
-            var jsonSettings = new JsonSerializerOptions();
-            jsonSettings.WriteIndented = true;
-
-            var test = JsonSerializer.Serialize(TheSettingsFile, jsonSettings);
-           
-
-            File.WriteAllText(@"C:\Users\Ben Haycraft\Desktop\Settings.json", test);
-
             MissingItems(); //this doesn't need to be run in the loop
             while (true)
             {
