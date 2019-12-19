@@ -4,13 +4,13 @@ using System.IO;
 using System.Diagnostics;
 using System.Configuration;
 using System.Runtime.InteropServices;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace HandBrakeRenderer
 {
     class Program
     {
-        static SettingsFile TheSettingsFile = new SettingsFile();
+        static SettingsFile CurrentSettings = new SettingsFile();
 
 
         //File Paths
@@ -337,20 +337,39 @@ namespace HandBrakeRenderer
             }
         }
 
-        private static void WriteTestJSON()
+        private static void WriteSettingsFile()
         {
-            var jsonSettings = new JsonSerializerOptions();
-            jsonSettings.WriteIndented = true;
-            var serializedJSON = JsonSerializer.Serialize(TheSettingsFile, jsonSettings);
-            File.WriteAllText(@"C:\Settings.json", serializedJSON);
+            string CD = Directory.GetCurrentDirectory();
+            string jsonSettingsPath = Path.GetFullPath(Path.Combine(CD, "Settings.json"));
+            if (!File.Exists(jsonSettingsPath))
+            {
+                var defaultSettings = new SettingsFile();
+                var json = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
+                File.WriteAllText(jsonSettingsPath, json);
+                Console.WriteLine("Successfully wrote Default Settings.json");
+            }
         }
 
+        private static void ReadSettingsFile()
+        {
+            SettingsFile defaultSettings = new SettingsFile();
+            string CD = Directory.GetCurrentDirectory();
+            string jsonSettingsPath = Path.GetFullPath(Path.Combine(CD, "Settings.json"));
+            string jsonRaw = File.ReadAllText(jsonSettingsPath);
 
+            var jsonSettings = new JsonSerializerSettings();
+            jsonSettings.NullValueHandling = NullValueHandling.Ignore;
+            
+            SettingsFile settings = JsonConvert.DeserializeObject<SettingsFile>(jsonRaw, jsonSettings);
+
+            CurrentSettings = settings;
+        }
 
         static void Main()
         {
-            
-            MissingItems(); //this doesn't need to be run in the loop
+            WriteSettingsFile(); // Create default settings file on first startup, or if it doesn't exist.
+            ReadSettingsFile(); // Load settings from Settings.json.
+            MissingItems(); // Create missing folders, ect.
             while (true)
             {
                 Console.Title = "Handbrake-Automated-Rendering: Looking for work";

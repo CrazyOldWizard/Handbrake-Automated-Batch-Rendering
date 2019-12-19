@@ -10,7 +10,7 @@ namespace HandBrakeRenderer
         //this is all still WIP
 
         // Options
-        public bool EnableStatusLog { get; set; }
+        public bool EnableStatusLog { get; set; } = false;
         public string HandbrakeCLI { get; set; } = Path.GetFullPath(Path.Combine(RootFolder, "HandBrakeCLI.exe"));
         public bool DeleteOriginalFiles { get; set; } = false; //this does nothing right now
         public string[] FileTypes { get; set; } = { ".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts" };

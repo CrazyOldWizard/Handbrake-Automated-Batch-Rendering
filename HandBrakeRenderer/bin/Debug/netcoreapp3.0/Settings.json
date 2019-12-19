@@ -19,8 +19,8 @@
     ".m2ts"
   ],
   "UtilitiesFolder": "C:\\Users\\Ben Haycraft\\Source\\Repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\netcoreapp3.0\\utils",
-  "InboxFolder": "C:\\Users\\Ben Haycraft\\Source\\Repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\netcoreapp3.0\\Inbox",
-  "OutboxFolder": "C:\\Users\\Ben Haycraft\\Source\\Repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\netcoreapp3.0\\Encoded",
+  "InboxFolder": null,
+  "OutboxFolder": "D:\\Users\\Ben Haycraft\\Source\\Repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\netcoreapp3.0\\Encoded",
   "OriginalFilesFolder": "C:\\Users\\Ben Haycraft\\Source\\Repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\netcoreapp3.0\\OriginalFiles",
   "HTMLStatusDirectory": null
 }
