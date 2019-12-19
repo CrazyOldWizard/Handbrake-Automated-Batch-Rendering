@@ -10,28 +10,26 @@ namespace HandBrakeRenderer
 {
     class Program
     {
-        static SettingsFile CurrentSettings = new SettingsFile();
-
+        static SettingsFile CurrentSettings = ReadSettingsFile(); // Loads settings from settings file.
 
         //File Paths
-        public static string RenderEXE = System.Reflection.Assembly.GetEntryAssembly().Location;
-        public static string RootFolder = Path.GetDirectoryName(RenderEXE);
-        public static string utilsFolder = Path.Combine(RootFolder, "utils");
-        public static string InboxFolder = Path.Combine(RootFolder, "Inbox");
-        public static string OutboxFolder = Path.Combine(RootFolder, "Encoded");
-        public static string HandBrakeCLI = Path.GetFullPath(Path.Combine(RootFolder, "HandBrakeCLI.exe")); // this will not work on other os's - hardcoded .exe
+        public static string RenderEXE = SettingsFile.ThisProgram;
+        public static string RootFolder = SettingsFile.RootFolder;
+        public static string utilsFolder = CurrentSettings.UtilitiesFolder;
+        public static string InboxFolder = CurrentSettings.InboxFolder;
+        public static string OutboxFolder = CurrentSettings.OutboxFolder;
+        public static string HandBrakeCLI = CurrentSettings.HandbrakeCLI; // this will not work on other os's - hardcoded .exe
         public static string quote = "\"";
-        public static string OriginalFilesFolder = Path.Combine(RootFolder, "OriginalFiles");
+        public static string OriginalFilesFolder = CurrentSettings.OriginalFilesFolder;
         public static string logFile = Path.GetFullPath(Path.Combine(RootFolder, "EncodeLog.txt"));
-        public static string htmlFolder = ConfigurationManager.AppSettings["HTMLStatusDir"];
+        public static string htmlFolder = CurrentSettings.HTMLStatusDirectory;
         public static string statusLog = Path.GetFullPath(Path.Combine(htmlFolder, "RenderStatus.txt"));
 
-        public bool statusLogEnabled = bool.Parse(ConfigurationManager.AppSettings["statusLogEnabled"]);
+        public bool statusLogEnabled = CurrentSettings.EnableStatusLog;
+        
         int numOfFiles;
 
         public static readonly string[] fileTypes = {".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts"};
-
-        private static readonly string[] programFolders = { OriginalFilesFolder, OutboxFolder, utilsFolder, InboxFolder };
 
         private static void createMissingFolder(string folder)
         {
@@ -53,7 +51,7 @@ namespace HandBrakeRenderer
         public static void MissingItems()
         {
             // Creates the folders required.
-
+            string[] programFolders = { OriginalFilesFolder, OutboxFolder, utilsFolder, InboxFolder };
             foreach (string folder in programFolders)
             {
                 createMissingFolder(folder);
@@ -293,7 +291,19 @@ namespace HandBrakeRenderer
                                             Console.WriteLine(e.ToString());
                                         }
                                         // when file is done, it will copy the original file to the "original files" folder and then delete the original file from the preset inbox
-                                        File.Copy(movie, Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)), true);
+                                        if (CurrentSettings.DeleteOriginalFiles == false)
+                                        {
+                                            try
+                                            {
+                                                File.Copy(movie, Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)), true);
+                                            }
+                                            catch(Exception fileMoveToOriginalFolder)
+                                            {
+                                                Console.WriteLine(fileMoveToOriginalFolder.Message);
+                                                File.AppendAllText(logFile, fileMoveToOriginalFolder.Message);
+                                                Thread.Sleep(3000);
+                                            }
+                                        }
                                         File.Delete(movie);
                                         File.Delete(nodeJobFile);
                                         // updates log file
@@ -348,7 +358,7 @@ namespace HandBrakeRenderer
             }
         }
 
-        private static void ReadSettingsFile()
+        private static SettingsFile ReadSettingsFile()
         {
             SettingsFile defaultSettings = new SettingsFile();
             string CD = Directory.GetCurrentDirectory();
@@ -360,13 +370,12 @@ namespace HandBrakeRenderer
             
             SettingsFile settings = JsonConvert.DeserializeObject<SettingsFile>(jsonRaw, jsonSettings);
 
-            CurrentSettings = settings;
+            return settings;
         }
 
         static void Main()
         {
             WriteSettingsFile(); // Create default settings file on first startup, or if it doesn't exist.
-            ReadSettingsFile(); // Load settings from Settings.json.
             MissingItems(); // Create missing folders, ect.
             while (true)
             {

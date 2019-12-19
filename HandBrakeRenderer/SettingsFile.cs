@@ -17,13 +17,13 @@ namespace HandBrakeRenderer
 
 
         // Directories
-        private static string ThisProgram = System.Reflection.Assembly.GetEntryAssembly().Location;
+        public static string ThisProgram = System.Reflection.Assembly.GetEntryAssembly().Location;
         public static string RootFolder { get; set; } = Path.GetDirectoryName(ThisProgram);
         public string UtilitiesFolder { get; set; } = Path.Combine(RootFolder, "utils");
         public string InboxFolder { get; set; } = Path.Combine(RootFolder, "Inbox");
         public string OutboxFolder { get; set; } = Path.Combine(RootFolder, "Encoded");
         public string OriginalFilesFolder { get; set; } = Path.Combine(RootFolder, "OriginalFiles");
-        public string HTMLStatusDirectory { get; set; }
+        public string HTMLStatusDirectory { get; set; } = Path.Combine(RootFolder, "StatusDirectory");
 
 
     }
