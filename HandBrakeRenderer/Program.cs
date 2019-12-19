@@ -50,7 +50,6 @@ namespace HandBrakeRenderer
             }
         }
 
-
         public static void MissingItems()
         {
             // Creates the folders required.
@@ -92,7 +91,6 @@ namespace HandBrakeRenderer
                 Console.WriteLine("Can't access specified file path for the Status Log! - Using " + statusLog);
             }
         }
-
 
         private static void OpenBrowser(string url)
         {
