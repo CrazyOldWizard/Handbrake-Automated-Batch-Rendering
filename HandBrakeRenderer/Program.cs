@@ -295,6 +295,7 @@ namespace HandBrakeRenderer
                                         {
                                             try
                                             {
+                                                Console.WriteLine("Copying original file to: " + OriginalFilesFolder);
                                                 File.Copy(movie, Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)), true);
                                             }
                                             catch(Exception fileMoveToOriginalFolder)
