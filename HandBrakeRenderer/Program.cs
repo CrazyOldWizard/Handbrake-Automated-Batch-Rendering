@@ -29,7 +29,7 @@ namespace HandBrakeRenderer
         
         int numOfFiles;
 
-        public static readonly string[] fileTypes = {".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts"};
+        public static readonly string[] fileTypes = CurrentSettings.FileTypes;
 
         private static void createMissingFolder(string folder)
         {
