@@ -223,6 +223,10 @@ namespace HandBrakeRenderer
                 // for each movie in the current preset folder
                 foreach (string movie in Directory.GetFiles(presetFolder, "*.*", SearchOption.AllDirectories))
                 {
+                    if(Path.GetFileName(movie).EndsWith(".renderjob"))
+                    {
+                        continue;
+                    }
                     // now it will go through the utils folder and look for preset names that share the name of the current preset folder
                     // if they match it will use that preset as the handbrake preset.json file
                     foreach (string presetFile in Directory.GetFiles(utilsFolder, "*.json", SearchOption.TopDirectoryOnly))
@@ -230,8 +234,8 @@ namespace HandBrakeRenderer
                         string presetFolderNoPth = new DirectoryInfo(presetFolder).Name;
                         string presetFileName = Path.GetFileNameWithoutExtension(presetFile);
                         bool contains = presetFolderNoPth.Equals(presetFileName);
-                        var movieName = Path.GetFileName(movie);
-                        var movieNameNoExt = Path.GetFileNameWithoutExtension(movie);
+                        string movieName = Path.GetFileName(movie);
+                        string movieNameNoExt = Path.GetFileNameWithoutExtension(movie);
                         string nodeJobFile = Path.GetFullPath(Path.Combine(presetFolder, (movieNameNoExt + ".renderjob")));
                         string outMovie = Path.GetFullPath(Path.Combine(OutboxFolder, (movieNameNoExt + ".mkv")));
                         //if the preset file contains the name of the current preset folder
@@ -295,8 +299,8 @@ namespace HandBrakeRenderer
                                         {
                                             try
                                             {
-                                                Console.WriteLine("Copying original file to: " + OriginalFilesFolder);
-                                                File.Copy(movie, Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)), true);
+                                                Console.WriteLine("Moving original file to: " + OriginalFilesFolder);
+                                                File.Move(movie, Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)), true);
                                             }
                                             catch(Exception fileMoveToOriginalFolder)
                                             {
@@ -305,7 +309,11 @@ namespace HandBrakeRenderer
                                                 Thread.Sleep(3000);
                                             }
                                         }
-                                        File.Delete(movie);
+                                        else
+                                        {
+                                            File.Delete(movie);
+                                        }
+                                        
                                         File.Delete(nodeJobFile);
                                         // updates log file
                                         string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)));
