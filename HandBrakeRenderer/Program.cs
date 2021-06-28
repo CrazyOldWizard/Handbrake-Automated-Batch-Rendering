@@ -267,8 +267,9 @@ namespace HandBrakeRenderer
                                         var videoFileToRender = videoFile;
                                         if (CurrentSettings.CopyRenderFileLocal)
                                         {
+                                            Console.WriteLine("Copying file to local folder, please wait...");
                                             var localVideoFile = Path.Combine(localWorkingFolder, movieName);
-                                            File.Copy(videoFile, localVideoFile);
+                                            File.Copy(videoFile, localVideoFile, true);
                                             videoFileToRender = localVideoFile;
                                         }
                                         
@@ -320,7 +321,13 @@ namespace HandBrakeRenderer
                                         }
                                         else
                                         {
+                                            Console.WriteLine($"Deleting {videoFileToRender}");
                                             File.Delete(videoFileToRender);
+                                            if(File.Exists(videoFile))
+                                            {
+                                                Console.WriteLine($"Deleting {videoFile}");
+                                                File.Delete(videoFile);
+                                            }
                                         }
                                         
                                         File.Delete(nodeJobFile);
