@@ -24,6 +24,7 @@ namespace HandBrakeRenderer
         public static string logFile = Path.GetFullPath(Path.Combine(RootFolder, "EncodeLog.txt"));
         public static string htmlFolder = CurrentSettings.HTMLStatusDirectory;
         public static string statusLog = Path.GetFullPath(Path.Combine(htmlFolder, "RenderStatus.txt"));
+        public static string localWorkingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
         public bool statusLogEnabled = CurrentSettings.EnableStatusLog;
         
@@ -51,7 +52,7 @@ namespace HandBrakeRenderer
         public static void MissingItems()
         {
             // Creates the folders required.
-            string[] programFolders = { OriginalFilesFolder, OutboxFolder, utilsFolder, InboxFolder };
+            string[] programFolders = { OriginalFilesFolder, OutboxFolder, utilsFolder, InboxFolder, localWorkingFolder };
             foreach (string folder in programFolders)
             {
                 createMissingFolder(folder);
@@ -221,9 +222,9 @@ namespace HandBrakeRenderer
             foreach (string presetFolder in Directory.GetDirectories(InboxFolder, "*", SearchOption.TopDirectoryOnly))
             {
                 // for each movie in the current preset folder
-                foreach (string movie in Directory.GetFiles(presetFolder, "*.*", SearchOption.AllDirectories))
+                foreach (string videoFile in Directory.GetFiles(presetFolder, "*.*", SearchOption.AllDirectories))
                 {
-                    if(Path.GetFileName(movie).EndsWith(".renderjob"))
+                    if(Path.GetFileName(videoFile).EndsWith(".renderjob"))
                     {
                         continue;
                     }
@@ -234,18 +235,18 @@ namespace HandBrakeRenderer
                         string presetFolderNoPth = new DirectoryInfo(presetFolder).Name;
                         string presetFileName = Path.GetFileNameWithoutExtension(presetFile);
                         bool contains = presetFolderNoPth.Equals(presetFileName);
-                        string movieName = Path.GetFileName(movie);
-                        string movieNameNoExt = Path.GetFileNameWithoutExtension(movie);
+                        string movieName = Path.GetFileName(videoFile);
+                        string movieNameNoExt = Path.GetFileNameWithoutExtension(videoFile);
                         string nodeJobFile = Path.GetFullPath(Path.Combine(presetFolder, (movieNameNoExt + ".renderjob")));
                         string outMovie = Path.GetFullPath(Path.Combine(OutboxFolder, (movieNameNoExt + ".mkv")));
                         //if the preset file contains the name of the current preset folder
                         if (contains == true)
                         {
                             // passes the movie onto the "IsFileReady()" and if true, starts
-                            if (IsFileReady(movie) == true)
+                            if (IsFileReady(videoFile) == true)
                             {
                                 // file extension filter
-                                string ext = Path.GetExtension(movie);
+                                string ext = Path.GetExtension(videoFile);
                                 int pos = Array.IndexOf(fileTypes, ext);
                                 //checks if array contains ext
                                 if (pos > -1)
@@ -262,15 +263,24 @@ namespace HandBrakeRenderer
                                         jobFile.Close();
                                         File.WriteAllText(nodeJobFile, ("Node " + Environment.MachineName + " got this job at " + DateTime.Now));
                                         // creates handbrake command
-                                        Console.WriteLine("I can render " + Path.GetFileName(movie));
-                                        var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + movie + quote + " -o " + quote + outMovie + quote);
+                                        Console.WriteLine("I can render " + Path.GetFileName(videoFile));
+                                        var videoFileToRender = videoFile;
+                                        if (CurrentSettings.CopyRenderFileLocal)
+                                        {
+                                            Console.WriteLine("Copying file to local folder, please wait...");
+                                            var localVideoFile = Path.Combine(localWorkingFolder, movieName);
+                                            File.Copy(videoFile, localVideoFile, true);
+                                            videoFileToRender = localVideoFile;
+                                        }
+                                        
+                                        var handbrakeCommand = (" --preset-import-file " + quote + presetFile + quote + " -Z " + quote + presetFileName + quote + " -i " + quote + videoFileToRender + quote + " -o " + quote + outMovie + quote);
                                         Console.WriteLine(handbrakeCommand);
 
                                         Console.Title = "Handbrake-Automated-Rendering:  " + movieName + " -- " + DateTime.Now;
 
                                         //start handbrake with the args
                                         // writes sring to log file with current movie and the preset in use
-                                        string currentFileLog = (DateTime.Now + " Current file is " + movie + " Using preset " + presetFileName);
+                                        string currentFileLog = (DateTime.Now + " Current file is " + videoFileToRender + " Using preset " + presetFileName);
                                         File.AppendAllText(logFile, currentFileLog + Environment.NewLine);
                                         // updates render status
                                         Program p = new Program();
@@ -300,7 +310,7 @@ namespace HandBrakeRenderer
                                             try
                                             {
                                                 Console.WriteLine("Moving original file to: " + OriginalFilesFolder);
-                                                File.Move(movie, Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)), true);
+                                                File.Move(videoFileToRender, Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)), true);
                                             }
                                             catch(Exception fileMoveToOriginalFolder)
                                             {
@@ -311,12 +321,18 @@ namespace HandBrakeRenderer
                                         }
                                         else
                                         {
-                                            File.Delete(movie);
+                                            Console.WriteLine($"Deleting {videoFileToRender}");
+                                            File.Delete(videoFileToRender);
+                                            if(File.Exists(videoFile))
+                                            {
+                                                Console.WriteLine($"Deleting {videoFile}");
+                                                File.Delete(videoFile);
+                                            }
                                         }
                                         
                                         File.Delete(nodeJobFile);
                                         // updates log file
-                                        string completeStatusLog = (DateTime.Now + " Moved " + movie + " to " + Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)));
+                                        string completeStatusLog = (DateTime.Now + " Moved " + videoFileToRender + " to " + Path.GetFullPath(Path.Combine(OriginalFilesFolder, movieName)));
                                         File.AppendAllText(logFile, completeStatusLog + Environment.NewLine);
                                         Console.WriteLine("RENDER FINISHED!!!");
                                         // updates render status
@@ -326,13 +342,13 @@ namespace HandBrakeRenderer
                                 }
                                 else
                                 {
-                                    Console.WriteLine(Path.GetFileName(movie) + " Is not a file I can render");
+                                    Console.WriteLine(Path.GetFileName(videoFile) + " Is not a file I can render");
                                 }
 
                             }
                             else
                             {
-                                bool renderingFile = Path.GetExtension(movie).Contains(".renderjob");
+                                bool renderingFile = Path.GetExtension(videoFile).Contains(".renderjob");
                                 if (File.Exists(nodeJobFile))
                                 {
                                     Console.WriteLine(movieNameNoExt + " is being rendered by another node, skipping");
@@ -343,7 +359,7 @@ namespace HandBrakeRenderer
                                 {
                                     // if it can't open the file and it is a valid movie, then it will show this message until file is ready to open
                                     Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine(movieName + " Do I have Read/Write access to this file? " + IsFileReady(movie) + " Probably still copying...");
+                                    Console.WriteLine(movieName + " Do I have Read/Write access to this file? " + IsFileReady(videoFile) + " Probably still copying...");
                                     Console.ResetColor();
                                     continue;
                                 }
