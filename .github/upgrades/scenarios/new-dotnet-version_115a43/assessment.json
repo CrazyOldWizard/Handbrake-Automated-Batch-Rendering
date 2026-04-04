@@ -1,0 +1,167 @@
+{
+  "settings": {
+    "components": {
+      "code": true,
+      "binaries": false
+    },
+    "targetId": "net10.0",
+    "targetDisplayName": ".NETCoreApp,Version=v10.0"
+  },
+  "analysisStartTime": "2026-04-04T04:16:58.0735785Z",
+  "analysisEndTime": "2026-04-04T04:16:58.6233352Z",
+  "privacyModeHelpUrl": "https://go.microsoft.com/fwlink/?linkid=2270980",
+  "stats": {
+    "summary": {
+      "projects": 1,
+      "issues": 2,
+      "incidents": 3,
+      "effort": 3
+    },
+    "charts": {
+      "severity": {
+        "Mandatory": 1,
+        "Optional": 0,
+        "Potential": 2,
+        "Information": 0
+      },
+      "category": {
+        "NuGet": 2,
+        "Project": 1
+      }
+    }
+  },
+  "projects": [
+    {
+      "path": "HandBrakeRenderer\\HandBrakeRenderer.csproj",
+      "startingProject": true,
+      "issues": 2,
+      "storyPoints": 3,
+      "properties": {
+        "appName": "HandBrakeRenderer",
+        "projectKind": "DotNetCoreApp",
+        "frameworks": [
+          "netcoreapp3.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 3,
+        "numberOfCodeFiles": 3,
+        "linesTotal": 483,
+        "linesOfCode": 483,
+        "totalApiScanned": 662,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "40c63fb7-d4ac-4962-8ab2-1b0e9834f007",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HandBrakeRenderer\\HandBrakeRenderer.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Newtonsoft.Json, 13.0.2\n\nRecommendation:\n\nRemove Newtonsoft.Json, and replace with new package Newtonsoft.Json 13.0.4",
+              "protected": "Newtonsoft.Json, 13.0.2\n\nRecommendation:\n\nRemove Newtonsoft.Json, and replace with new package Newtonsoft.Json 13.0.4"
+            },
+            "kind": "File",
+            "path": "HandBrakeRenderer\\HandBrakeRenderer.csproj",
+            "snippet": "Newtonsoft.Json, 13.0.2\n\nRecommendation:\n\nRemove Newtonsoft.Json, and replace with new package Newtonsoft.Json 13.0.4",
+            "protectedSnippet": "Newtonsoft.Json, 13.0.2\n\nRecommendation:\n\nRemove Newtonsoft.Json, and replace with new package Newtonsoft.Json 13.0.4",
+            "label": "Newtonsoft.Json 13.0.2",
+            "properties": {
+              "PackageId": "Newtonsoft.Json",
+              "PackageVersion": "13.0.2",
+              "PackageNewVersion": "13.0.4",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "7c5e38c8-3511-4320-b134-f69d58d9c230",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HandBrakeRenderer\\HandBrakeRenderer.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "System.Configuration.ConfigurationManager, 4.7.0\n\nRecommendation:\n\nRemove System.Configuration.ConfigurationManager, and replace with new package System.Configuration.ConfigurationManager 10.0.5",
+              "protected": "System.Configuration.ConfigurationManager, 4.7.0\n\nRecommendation:\n\nRemove System.Configuration.ConfigurationManager, and replace with new package System.Configuration.ConfigurationManager 10.0.5"
+            },
+            "kind": "File",
+            "path": "HandBrakeRenderer\\HandBrakeRenderer.csproj",
+            "snippet": "System.Configuration.ConfigurationManager, 4.7.0\n\nRecommendation:\n\nRemove System.Configuration.ConfigurationManager, and replace with new package System.Configuration.ConfigurationManager 10.0.5",
+            "protectedSnippet": "System.Configuration.ConfigurationManager, 4.7.0\n\nRecommendation:\n\nRemove System.Configuration.ConfigurationManager, and replace with new package System.Configuration.ConfigurationManager 10.0.5",
+            "label": "System.Configuration.ConfigurationManager 4.7.0",
+            "properties": {
+              "PackageId": "System.Configuration.ConfigurationManager",
+              "PackageVersion": "4.7.0",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "bc11128e-67de-4418-b39f-4dfd7da7ffab",
+          "ruleId": "Project.0002",
+          "projectPath": "HandBrakeRenderer\\HandBrakeRenderer.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: netcoreapp3.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: netcoreapp3.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "HandBrakeRenderer\\HandBrakeRenderer.csproj",
+            "snippet": "Current target framework: netcoreapp3.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: netcoreapp3.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "netcoreapp3.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        }
+      ],
+      "features": []
+    }
+  ],
+  "rules": {
+    "NuGet.0002": {
+      "id": "NuGet.0002",
+      "isFeature": false,
+      "description": "NuGet package upgrade is recommended for selected target framework.\n\nStandard .NET packages are recommended to have versions matching version of .NET that project targets.\n\nSome other packages also are known to work better for selected target frameworks.",
+      "label": "NuGet package upgrade is recommended",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262530",
+          "isCustom": false
+        }
+      ]
+    },
+    "Project.0002": {
+      "id": "Project.0002",
+      "isFeature": false,
+      "description": "Project\u0027s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.\n\nDuring upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in modern .NET frameworks (windows, iOS, Android etc).",
+      "label": "Project\u0027s target framework(s) needs to be changed",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Overview of porting from .NET Framework to .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265227",
+          "isCustom": false
+        },
+        {
+          "title": ".NET project SDKs",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265226",
+          "isCustom": false
+        }
+      ]
+    }
+  }
+}
