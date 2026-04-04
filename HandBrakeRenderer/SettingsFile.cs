@@ -1,30 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 
-namespace HandBrakeRenderer
+namespace HandBrakeRenderer;
+
+public class AppSettings
 {
-    public class SettingsFile
+    public const string SectionName = "AppSettings";
+
+    public bool EnableStatusLog { get; set; }
+    public string HandbrakeCLI { get; set; } = "HandBrakeCLI.exe";
+    public bool DeleteOriginalFiles { get; set; }
+    public string[] FileTypes { get; set; } = 
+    { 
+        ".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", 
+        ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts" 
+    };
+    public bool CopyRenderFileLocal { get; set; }
+
+    public string UtilitiesFolder { get; set; } = "utils";
+    public string InboxFolder { get; set; } = "Inbox";
+    public string OutboxFolder { get; set; } = "Encoded";
+    public string OriginalFilesFolder { get; set; } = "OriginalFiles";
+    public string HTMLStatusDirectory { get; set; } = "StatusDirectory";
+    public int PollingIntervalSeconds { get; set; } = 1;
+
+    public string GetFullPath(string relativePath)
     {
-        //this is all still WIP
-
-        // Options
-        public bool EnableStatusLog { get; set; } = false;
-        public string HandbrakeCLI { get; set; } = Path.GetFullPath(Path.Combine(RootFolder, "HandBrakeCLI.exe"));
-        public bool DeleteOriginalFiles { get; set; } = false; //this does nothing right now
-        public string[] FileTypes { get; set; } = { ".mkv", ".mp4", ".webm", ".avi", ".mov", ".flv", ".wmv", ".ts", ".m4v", ".mpg", ".mpeg", ".vob", ".mts", ".m2ts" };
-        public bool CopyRenderFileLocal { get; set; } = false;
-
-        // Directories
-        public static string ThisProgram = System.Reflection.Assembly.GetEntryAssembly().Location;
-        public static string RootFolder { get; set; } = Path.GetDirectoryName(ThisProgram);
-        public string UtilitiesFolder { get; set; } = Path.Combine(RootFolder, "utils");
-        public string InboxFolder { get; set; } = Path.Combine(RootFolder, "Inbox");
-        public string OutboxFolder { get; set; } = Path.Combine(RootFolder, "Encoded");
-        public string OriginalFilesFolder { get; set; } = Path.Combine(RootFolder, "OriginalFiles");
-        public string HTMLStatusDirectory { get; set; } = Path.Combine(RootFolder, "StatusDirectory");
-        
-
+        var rootFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly()!.Location)!;
+        return Path.GetFullPath(Path.Combine(rootFolder, relativePath));
     }
 }
