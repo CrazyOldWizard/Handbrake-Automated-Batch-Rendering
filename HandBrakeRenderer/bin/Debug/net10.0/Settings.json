@@ -1,0 +1,27 @@
+{
+  "EnableStatusLog": false,
+  "HandbrakeCLI": "C:\\Users\\Ben\\source\\repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\net10.0\\HandBrakeCLI.exe",
+  "DeleteOriginalFiles": false,
+  "FileTypes": [
+    ".mkv",
+    ".mp4",
+    ".webm",
+    ".avi",
+    ".mov",
+    ".flv",
+    ".wmv",
+    ".ts",
+    ".m4v",
+    ".mpg",
+    ".mpeg",
+    ".vob",
+    ".mts",
+    ".m2ts"
+  ],
+  "CopyRenderFileLocal": false,
+  "UtilitiesFolder": "C:\\Users\\Ben\\source\\repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\net10.0\\utils",
+  "InboxFolder": "C:\\Users\\Ben\\source\\repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\net10.0\\Inbox",
+  "OutboxFolder": "C:\\Users\\Ben\\source\\repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\net10.0\\Encoded",
+  "OriginalFilesFolder": "C:\\Users\\Ben\\source\\repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\net10.0\\OriginalFiles",
+  "HTMLStatusDirectory": "C:\\Users\\Ben\\source\\repos\\CrazyOldWizard\\Handbrake-Automated-Batch-Rendering\\HandBrakeRenderer\\bin\\Debug\\net10.0\\StatusDirectory"
+}
